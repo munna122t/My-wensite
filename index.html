@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruthLens – Fake News & AI Media Detector</title>
+  <meta name="description" content="Check text, images, and videos for misinformation. Hackathon-ready demo UI." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ----- Custom polish on top of Tailwind ----- */
+    :root{
+      --card:#0f172a; /* slate-900 */
+      --card2:#111827; /* gray-900 */
+      --muted:#94a3b8; /* slate-400 */
+      --accent:#60a5fa; /* blue-400 */
+      --accent-2:#22d3ee; /* cyan-400 */
+    }
+    .glass{backdrop-filter: blur(10px); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));}
+    .card{background:var(--card); border:1px solid rgba(255,255,255,.08); box-shadow:0 8px 28px rgba(0,0,0,.35)}
+    .soft{border-radius: 18px}
+    .btn{transition:.2s transform ease, .2s box-shadow ease}
+    .btn:hover{transform: translateY(-1px); box-shadow:0 10px 24px rgba(34,211,238,.25)}
+    .result{font-size:25px; line-height:1.3} /* as requested: 25px result text */
+    /* Pretty custom file input */
+    .filebox input[type=file]{display:none}
+    .filebox label{display:inline-flex;align-items:center;gap:.6rem;padding:.75rem 1rem;border-radius:12px;background:#111827;border:1px dashed rgba(255,255,255,.18);color:#e5e7eb;cursor:pointer}
+    .filebox label:hover{border-color:rgba(255,255,255,.36)}
+    .progress{height:10px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .progress > span{display:block;height:100%;width:0%;background:linear-gradient(90deg, var(--accent), var(--accent-2));transition: width .25s ease}
+    .badge{font-size:.75rem;padding:.25rem .5rem;border-radius:.5rem;background:rgba(96,165,250,.15);color:#bfdbfe;border:1px solid rgba(96,165,250,.35)}
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-50 selection:bg-cyan-400 selection:text-slate-900">
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-40 bg-slate-950/70 glass border-b border-white/5">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-400"></div>
+        <span class="text-xl font-bold tracking-tight">TruthLens</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-6 text-slate-300">
+        <a href="#features" class="hover:text-white">Features</a>
+        <a href="#demo" class="hover:text-white">Demo</a>
+        <a href="#how" class="hover:text-white">How it works</a>
+        <a href="#faq" class="hover:text-white">FAQ</a>
+      </div>
+    </div>
+  </nav>  <!-- HERO -->  <header class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10 opacity-30">
+      <div class="h-72 bg-gradient-to-b from-blue-600/10 via-cyan-400/10 to-transparent blur-3xl"></div>
+    </div>
+    <section class="max-w-6xl mx-auto px-4 py-14 text-center">
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
+        Fake News & Deepfake Detector <span class="text-cyan-400">(Demo)</span>
+      </h1>
+      <p class="mt-4 text-slate-300 max-w-2xl mx-auto">
+        Verify text, images, and videos in seconds. Built for hackathons: fast, clean, and judge-friendly.
+      </p>
+      <div class="mt-6 flex items-center justify-center gap-3">
+        <a href="#demo" class="btn inline-flex items-center gap-2 bg-cyan-400 text-slate-900 font-semibold px-5 py-3 rounded-xl">
+          <span>Try the Demo</span>
+        </a>
+        <span class="badge">No login · Free · Prototype</span>
+      </div>
+    </section>
+  </header>  <!-- FEATURES -->  <section id="features" class="max-w-6xl mx-auto px-4 pb-4">
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="card soft p-6">
+        <h3 class="text-xl font-semibold">📰 Text Checker</h3>
+        <p class="text-slate-300 mt-2">Paste a headline or short text and get a quick fake/real probability.</p>
+      </div>
+      <div class="card soft p-6">
+        <h3 class="text-xl font-semibold">🖼️ Image Checker</h3>
+        <p class="text-slate-300 mt-2">Upload a photo to estimate if it looks AI-generated or manipulated.</p>
+      </div>
+      <div class="card soft p-6">
+        <h3 class="text-xl font-semibold">🎥 Video Checker</h3>
+        <p class="text-slate-300 mt-2">Drop a short clip to simulate deepfake likelihood analysis.</p>
+      </div>
+    </div>
+  </section>  <!-- DEMO -->  <section id="demo" class="max-w-6xl mx-auto px-4 py-10">
+    <h2 class="text-3xl font-bold mb-6">Interactive Demo</h2>
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- TEXT CARD -->
+      <div class="card soft p-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">📝 Headline / Text</h3>
+          <span class="badge">Instant</span>
+        </div>
+        <textarea id="textInput" rows="4" placeholder="Paste a news headline…" class="mt-3 w-full rounded-xl bg-slate-900 border border-white/10 p-3 focus:outline-none focus:ring-2 focus:ring-cyan-400 text-slate-100"></textarea>
+        <div class="mt-3 progress"><span id="textProg"></span></div>
+        <button id="textBtn" class="btn w-full mt-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-900 font-semibold py-2.5 rounded-xl">Check Text</button>
+        <div id="textOut" class="result mt-3 text-slate-100"></div>
+      </div><!-- IMAGE CARD -->
+  <div class="card soft p-6">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold">🖼️ Image</h3>
+      <span class="badge">Prototype</span>
+    </div>
+    <div class="mt-3 filebox">
+      <input id="imgFile" type="file" accept="image/*" />
+      <label for="imgFile" class="w-full justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5V6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8.5M3 16.5a2.5 2.5 0 002.5 2.5h13A2.5 2.5 0 0021 16.5M3 16.5l3.5-3.5a2 2 0 012.828 0L13 17m-1-1l1.5-1.5a2 2 0 012.828 0L21 17"/></svg>
+        <span>Choose Image</span>
+      </label>
+    </div>
+    <div class="mt-3 progress"><span id="imgProg"></span></div>
+    <button id="imgBtn" class="btn w-full mt-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-900 font-semibold py-2.5 rounded-xl">Check Image</button>
+    <div id="imgOut" class="result mt-3 text-slate-100"></div>
+  </div>
+
+  <!-- VIDEO CARD -->
+  <div class="card soft p-6">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold">🎬 Video</h3>
+      <span class="badge">Prototype</span>
+    </div>
+    <div class="mt-3 filebox">
+      <input id="vidFile" type="file" accept="video/*" />
+      <label for="vidFile" class="w-full justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14m-1 0H6a2 2 0 01-2-2V7a2 2 0 012-2h8a2 2 0 012 2v7z"/></svg>
+        <span>Choose Video</span>
+      </label>
+    </div>
+    <div class="mt-3 progress"><span id="vidProg"></span></div>
+    <button id="vidBtn" class="btn w-full mt-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-900 font-semibold py-2.5 rounded-xl">Check Video</button>
+    <div id="vidOut" class="result mt-3 text-slate-100"></div>
+  </div>
+</div>
+
+<!-- QUICK VERIFY LINKS -->
+<div class="card soft mt-6 p-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h4 class="text-lg font-semibold">Quick verify</h4>
+      <p class="text-slate-300">Use trusted sources while you demo.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a target="_blank" href="https://news.google.com/" class="badge">Google News</a>
+      <a target="_blank" href="https://www.snopes.com/" class="badge">Snopes</a>
+      <a target="_blank" href="https://factcheck.org/" class="badge">FactCheck.org</a>
+    </div>
+  </div>
+</div>
+
+  </section>  <!-- HOW IT WORKS / VALUE PROP -->  <section id="how" class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="card soft p-6">
+        <h3 class="text-xl font-semibold">How it works (demo)</h3>
+        <ol class="list-decimal text-slate-300 mt-3 ml-5 space-y-2">
+          <li>We score sensational patterns and metadata heuristics.</li>
+          <li>For images/videos, we simulate a frame-sample pipeline.</li>
+          <li>Outputs are expressed as Fake/Real likelihood (%) for clarity.</li>
+        </ol>
+      </div>
+      <div class="card soft p-6">
+        <h3 class="text-xl font-semibold">Why judges will like it</h3>
+        <ul class="list-disc text-slate-300 mt-3 ml-5 space-y-2">
+          <li>End-to-end UX in one page, mobile-first.</li>
+          <li>Clear, explainable outputs (large 25px results).</li>
+          <li>Clean code structure for quick extension with real APIs.</li>
+        </ul>
+      </div>
+    </div>
+  </section>  <!-- FAQ -->  <section id="faq" class="max-w-6xl mx-auto px-4 pb-16">
+    <div class="card soft p-6">
+      <h3 class="text-xl font-semibold">FAQ</h3>
+      <div class="mt-3 grid md:grid-cols-3 gap-6 text-slate-300">
+        <div>
+          <p class="font-semibold">Is this model-backed?</p>
+          <p class="mt-1">This is a hackathon prototype UI. You can connect any API later.</p>
+        </div>
+        <div>
+          <p class="font-semibold">Offline friendly?</p>
+          <p class="mt-1">Runs fully in the browser for demo (no uploads leave your device).</p>
+        </div>
+        <div>
+          <p class="font-semibold">How to extend?</p>
+          <p class="mt-1">Wire the buttons to a backend (FastAPI/Flask) or hosted model endpoints.</p>
+        </div>
+      </div>
+    </div>
+  </section>  <!-- FOOTER -->  <footer class="border-t border-white/5 bg-slate-950">
+    <div class="max-w-6xl mx-auto px-4 py-8 text-center text-slate-400">Made with ❤️ by Munna · TruthLens (Hackathon Demo)</div>
+  </footer>  <!-- SCRIPT: Simulated analysis with progress + percentages -->  <script>
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    function runProgress(barEl, cb){
+      barEl.style.width = '0%';
+      let p = 0; const t = setInterval(()=>{
+        p += rand(8,16);
+        if(p >= 100){ p = 100; clearInterval(t); cb(); }
+        barEl.style.width = p + '%';
+      }, 200);
+    }
+
+    // TEXT
+    document.getElementById('textBtn').addEventListener('click', ()=>{
+      const txt = (document.getElementById('textInput').value||'').trim();
+      const out = document.getElementById('textOut');
+      const bar = document.getElementById('textProg');
+      if(!txt){ out.textContent = '❌ Please enter a headline/text'; return; }
+      out.textContent = 'Analyzing…';
+      runProgress(bar, ()=>{
+        const sensational = /(shocking|breaking|exposed|secret|miracle|alien|free money|guaranteed|viral)/i.test(txt);
+        const score = sensational ? rand(70,95) : rand(40,75);
+        const verdict = score >= 60 ? 'Possibly Fake' : 'Likely Real';
+        out.innerHTML = `📰 ${verdict}: <strong>${score}%</strong>`;
+        // Add verify link
+        const a = document.createElement('a');
+        a.href = 'https://news.google.com/search?q=' + encodeURIComponent(txt);
+        a.target = '_blank';
+        a.className = 'block text-base text-cyan-300 mt-2 underline';
+        a.textContent = '🔎 Verify on Google News';
+        out.appendChild(a);
+      });
+    });
+
+    // IMAGE
+    document.getElementById('imgBtn').addEventListener('click', ()=>{
+      const f = document.getElementById('imgFile').files[0];
+      const out = document.getElementById('imgOut');
+      const bar = document.getElementById('imgProg');
+      if(!f){ out.textContent = '❌ Please choose an image'; return; }
+      out.textContent = 'Scanning pixels…';
+      runProgress(bar, ()=>{
+        const score = rand(50, 92);
+        const verdict = score >= 60 ? 'Looks AI/Edited' : 'Looks Real';
+        out.innerHTML = `🖼️ ${verdict}: <strong>${score}%</strong>`;
+      });
+    });
+
+    // VIDEO
+    document.getElementById('vidBtn').addEventListener('click', ()=>{
+      const f = document.getElementById('vidFile').files[0];
+      const out = document.getElementById('vidOut');
+      const bar = document.getElementById('vidProg');
+      if(!f){ out.textContent = '❌ Please choose a video'; return; }
+      out.textContent = 'Sampling frames…';
+      runProgress(bar, ()=>{
+        const score = rand(55, 90);
+        const verdict = score >= 60 ? 'Deepfake Likely' : 'Likely Authentic';
+        out.innerHTML = `🎬 ${verdict}: <strong>${score}%</strong>`;
+      });
+    });
+  </script></body>
+</html>
